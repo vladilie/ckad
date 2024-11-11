@@ -1,0 +1,43 @@
+#Create a Pod named multi-container-pod in the default namespace with two containers:
+#The first container named nginx should use the nginx:latest image and expose port 80.
+#The second container named logger should use the busybox:latest image and continuously print logs from the nginx container’s /var/log/nginx directory every 5 seconds.
+#Ensure the logger container has access to the logs directory of the nginx container.
+#Confirm the pod is running and validate the logs are being printed from the nginx container by the logger.
+#
+# ! share the volumes between containers. 
+#
+# to test one can run this: 
+#
+# k exec -it multi-container-pod -- /bin/sh 
+# > echo "test" > /var/logs/nginx/access.log
+# k logs multi-container-pod -c logger 
+
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: multi-container-pod
+  name: multi-container-pod
+spec:
+  volumes:
+  - name: logvol
+    emptyDir: {}
+  containers:
+  - image: nginx:latest
+    name: nginx
+    ports:
+    - containerPort: 80
+    volumeMounts:
+    - name: logvol
+      mountPath: /var/log/nginx
+    resources: {}
+  - image: busybox
+    name: logger
+    command: [ "sh", "-c", "while true; do cat /var/log/nginx/access.log; sleep 5; done" ]
+    volumeMounts:
+    - name: logvol
+      mountPath: /var/log/nginx
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}

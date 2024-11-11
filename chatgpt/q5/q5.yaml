@@ -1,0 +1,75 @@
+#Deploy a Deployment named autoscale-app in the default namespace with the following configuration:
+#Use the image nginx:latest.
+#Set the number of replicas to 1.
+#Expose port 80.
+#Create a Horizontal Pod Autoscaler for the autoscale-app Deployment with the following criteria:
+#Target CPU utilization of 50%.
+#Minimum of 1 replica and a maximum of 5 replicas.
+#Trigger a CPU load on the deployment (e.g., by running a busybox pod to send traffic to the autoscale-app) and verify that the HPA scales the replicas based on CPU load.
+
+# k create deploy autoscale-app --image=nginx:latest --replicas=1 --port=80
+# k expose deploy autoscale-app --port=80 --type=ClusterIP
+# k autoscale deploy autoscale-app  --min=1 --max=5 --cpu-percent=50%
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: autoscale-app
+  name: autoscale-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autoscale-app
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: autoscale-app
+    spec:
+      containers:
+      - image: nginx:latest
+        name: nginx
+        ports:
+        - containerPort: 80
+        resources: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: autoscale-app
+  name: autoscale-app
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: autoscale-app
+  type: ClusterIP
+status:
+  loadBalancer: {}§
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  creationTimestamp: null
+  name: autoscale-app
+spec:
+  maxReplicas: 5
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: autoscale-app
+  targetCPUUtilizationPercentage: 50
+status:
+  currentReplicas: 0
+  desiredReplicas: 0

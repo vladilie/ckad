@@ -1,0 +1,56 @@
+#Create a ConfigMap named app-config with the following data:
+#APP_ENV=production
+#APP_DEBUG=false
+#Create a Secret named app-secret with the following data:
+#DB_PASSWORD with a value of password123
+#Deploy a Pod named config-secret-pod using the image busybox:latest and ensure it uses the above ConfigMap and Secret:
+#Mount the ConfigMap data as environment variables in the pod.
+#Inject the Secret DB_PASSWORD as an environment variable.
+#Verify that the pod has the correct configuration values and the password is set correctly without being exposed in plain text.
+
+# k create cm app-config --from-literal=APP_ENV=production --from-literal=APP_DEBUG=false -o yaml --dry-run=client >> cfg.yaml
+# k create secret generic app-secret --from-literal=DB_PASSWORD=password123 -o yaml --dry-run=client >> scrt.yaml
+# k run config-secret-pod --image=busybox:latest -o yaml -- sleep 3600
+# k set env pod/config-secret-pod --from=secret/app-secret
+# k set env pod/config-secret-pod --from=configmap/app-config
+# k edit pod/config-secret-pod -o yaml >> pod.yaml
+# k exec pod/config-secret-pod -- env
+
+--- 
+apiVersion: v1
+metadata:
+  creationTimestamp: null
+  name: app-config
+kind: ConfigMap
+data:
+  APP_DEBUG: "false"
+  APP_ENV: production
+---
+apiVersion: v1
+data:
+  DB_PASSWORD: cGFzc3dvcmQxMjM=
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: app-secret
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: config-secret-pod
+  name: config-secret-pod
+  namespace: default
+spec:
+  containers:
+  - image: busybox:latest
+    name: config-secret-pod
+    envFrom:
+      - configMapRef:
+          name: app-config
+      - secretRef:
+          name: app-secret
+    command: 
+    - /bin/sh
+    - "-c"
+    - sleep 360000

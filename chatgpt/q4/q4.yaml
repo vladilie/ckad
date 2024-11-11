@@ -1,0 +1,40 @@
+#
+# Deploy a Deployment named sample-app with the following configuration:
+# Use the image nginx:1.17.0.
+# Set the number of replicas to 3.
+# Label the Deployment with manage=sample-app.
+# Perform a rolling update to upgrade the sample-app Deployment to nginx:1.18.0.
+# After verifying that the update is applied, roll back the deployment to nginx:1.17.0.
+# Confirm that the application is successfully rolled back by verifying the running pods' image versions.
+#
+# k create deploy sample-app --image=nginx:1.17.0 --replicas=3 -oyaml --dry-run=client > deploy.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: sample-app
+    manage: sample-app
+  name: sample-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sample-app
+      manage: sample-app
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: sample-app
+        manage: sample-app
+    spec:
+      containers:
+      - image: nginx:1.17.0
+        name: nginx
+ 
+
+
+
