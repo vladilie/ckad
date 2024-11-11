@@ -1,0 +1,63 @@
+
+#Deploy a Pod named health-check-pod in the default namespace with the following configuration:
+#Use the image httpd:2.4 and expose port 80.
+#Configure a liveness probe that checks the /status endpoint of the application every 15 seconds, with an initial delay of 20 seconds. If the probe fails, the pod should be restarted.
+#Configure a readiness probe that checks the same endpoint every 10 seconds with an initial delay of 10 seconds.
+#Confirm that the liveness and readiness probes are correctly configured and functioning by monitoring the pod's status.
+
+# by default httpd does not have a /status path - so maybe solving this would only make use of the port. 
+# added some configuration to httpd.conf to enable the mod_status part.
+# mounted 1 volume for initContainers to update copy the whole conf directory and make the change in httpd.conf
+# mounted 2 volume for the containers to use the httpd.conf
+
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: health-check-pod
+  name: health-check-pod
+spec:
+  volumes: 
+  - name: config-volume
+    emptyDir: {}
+  initContainers:
+  - image: httpd 
+    name: init-httpd-conf
+    volumeMounts:
+    - name: config-volume
+      mountPath: /mnt
+    command:
+    - /bin/sh
+    - -c
+    - |
+      cp -a /usr/local/apache2/conf/. /mnt/ && \
+      echo "LoadModule status_module modules/mod_status.so" >> /mnt/httpd.conf && \
+      echo "<Location /status>" >> /mnt/httpd.conf && \
+      echo "    SetHandler server-status" >> /mnt/httpd.conf && \
+      echo "</Location>" >> /mnt/httpd.conf && \
+      cat /usr/local/apache2/conf/httpd.conf
+  containers:
+  - image: httpd
+    name: health-check-pod
+    ports:
+    - containerPort: 80
+    volumeMounts:
+    - name: config-volume
+      mountPath: /usr/local/apache2/conf
+    resources: {}
+    livenessProbe:
+      httpGet:
+        path: /status
+        port: 80
+      initialDelaySeconds: 20
+      periodSeconds: 15
+    readinessProbe:
+      httpGet:
+        path: /status
+        port: 80
+      initialDelaySeconds: 10
+      periodSeconds: 10
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
