@@ -1,0 +1,37 @@
+#
+#You have an existing ConfigMap named database-config with the following data:
+#
+#DB_HOST: localhost
+#DB_PORT: 5432
+#This ConfigMap is already being used in a running pod named db-pod. 
+#Update the DB_HOST value to db-server without redeploying the pod. Verify that the change is applied to db-pod.
+#
+# k create cm app-config --from-literal=DB_HOST=localhost --from-literal=DB_PORT=5432 
+# k run db-pod --image=nginx -oyaml --dry-run=client > q2.yaml
+# k create -f q2.yaml
+# k exec -it run-pod -- /bin/sh
+# > export DB_HOST=db-server
+# > exit
+# k describe pod/db-pod
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: app-config
+data:
+  DB_HOST: "localhost"
+  DB_PORT: "5432"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: run-pod
+spec:
+  containers:
+    - name: test-container
+      image: nginx
+      envFrom:
+      - configMapRef:
+          name: app-config
+  restartPolicy: Never

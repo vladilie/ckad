@@ -1,0 +1,35 @@
+# Create a ConfigMap named app-config with the following data:
+# GREETING: Hello, World
+# Then create a pod named greeting-pod using the busybox image. 
+# Set it to run with the command echo and pass GREETING from app-config as an argument to this command.
+# Ensure the pod prints "Hello, World" on startup.
+# % k create cm app-config --from-literal=GREETING=Hello, World
+# % k run greeting-pod --image=busybox  -oyaml --dry-run=client > q4.yaml
+# % k exec pod/greeting-pod -- env
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: app-config
+data:
+  GREETING: "Hello, World"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: greeting-pod
+  name: greeting-pod
+spec:
+  containers:
+  - image: busybox
+    name: greeting-pod
+    command:
+    - 'sh'
+    - '-c'
+    - 'sleep 36000'
+    envFrom: 
+      - configMapRef: 
+          name: app-config
