@@ -1,0 +1,37 @@
+#
+# Volume Mounting a ConfigMap in a Pod
+# Create a ConfigMap named html-config with a key index.html containing the text
+#  "<html><body>Welcome</body></html>".
+#  Next, create a pod named web-pod that mounts this ConfigMap as a volume in the path 
+# /usr/share/nginx/html/ and uses the nginx image. 
+# Verify that the pod serves the content from index.html on port 80.
+#
+# %touch index.html
+# %echo "<html><body>Welcome</body></html>" >> index.html
+# %k create cm html-config --from-file=index.html
+# %k run web-pod --image=nginx -oyaml --dry-run=client > q3.yaml
+# %k get pod -owide
+# NAME      READY   STATUS    RESTARTS   AGE   IP            NODE       NOMINATED NODE   READINESS GATES
+# web-pod   1/1     Running   0          22s   10.244.0.12   minikube   <none>           <none>
+# %minikube ssh    
+# docker@minikube:~$ curl http://10.244.0.12
+# <html><body>Welcome</body></html>
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: web-pod
+  name: web-pod
+spec:
+  containers:
+  - image: nginx
+    name: web-pod
+    volumeMounts:
+    - name: config-volume
+      mountPath: /usr/share/nginx/html/
+  volumes:
+  - name: config-volume
+    configMap:
+        name: html-config
