@@ -1,0 +1,105 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: app-deploy
+  name: app-deployment
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: app-deploy
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: app-deploy
+    spec:
+      containers:
+      - image: nginx:latest
+        name: nginx
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: app-deploy
+   
+  name: app-deployment-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-deploy
+     
+  template:
+    metadata:
+      labels:
+        app: app-deploy
+       
+    spec:
+      containers:
+      - image: nginx:latest
+        name: nginx
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: app-deploy
+  name: app-v1-service
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: app-deploy
+---
+apiVersion: v1
+kind: Service
+metadata:
+    labels:
+      app: app-deploy
+    name: app-v2-service
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: app-deploy
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-deploy
+  annotations:
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "20"
+  labels:
+    app: app-deploy
+spec:
+  rules:
+  - host: my.app.test
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app-v1-service
+            port:
+              number: 80
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app-v2-service
+            port:
+              number: 80
