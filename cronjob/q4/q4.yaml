@@ -1,0 +1,38 @@
+#
+# Configure a CronJob that attempts to run every 10 minutes but should retry up to 5 times if it fails, 
+# with a 2-minute delay between retries. 
+# Set it to use an image that executes a non-existent command (forcing failure) to test the retry mechanism.
+#
+#
+# K create cronjob failing-job --schedule="10 * * * *" -oyaml --dry-run=client >> q4.yaml
+#
+# backoffLimit: 5
+# activeDeadlineSeconds: 120
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  creationTimestamp: null
+  name: failing-job
+spec:
+  schedule: '*/10 * * * *'
+  backoffLimit: 5  
+  activeDeadlineSeconds: 120
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+      name: failing-job
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          containers:
+          - command:
+            - exit
+            - "1"
+            image: busybox
+            name: failing-job
+            resources: {}
+          restartPolicy: OnFailure
+  

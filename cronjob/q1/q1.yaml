@@ -1,0 +1,31 @@
+#
+# Create a Kubernetes CronJob that runs every 5 minutes. 
+# The CronJob should execute a simple command that outputs "Hello, Kubernetes!" to the console.
+#
+# % k create cronjob my-job --image=busybox --schedule="*/5 * * * *" -oyaml --dry-run=client -- echo "Hello World"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  creationTimestamp: null
+  name: my-job
+spec:
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+      name: my-job
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          containers:
+          - command:
+            - echo
+            - Hello World
+            image: busybox
+            name: my-job
+            resources: {}
+          restartPolicy: OnFailure
+  schedule: '*/5 * * * *'
+  

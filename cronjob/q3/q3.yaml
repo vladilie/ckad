@@ -1,0 +1,35 @@
+# Create a CronJob that runs every hour but keeps only the last
+#  3 successful and the last 1 failed job in its history.
+# Use a busybox container that echoes "Hourly Task" and completes.
+#
+#
+# % k create cronjob my-job --image=busybox --schedule="0 * * * *" -oyaml --dry-run=client -- echo "Hourly Task"
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  creationTimestamp: null
+  name: my-job
+spec:
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+      name: my-job
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          containers:
+          - command:
+            - echo
+            - Hourly Task
+            image: busybox
+            name: my-job
+            resources: {}
+          restartPolicy: OnFailure
+  schedule: 0 */1 * * *
+status: {}
