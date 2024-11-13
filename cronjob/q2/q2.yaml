@@ -1,0 +1,31 @@
+#
+# Create a CronJob scheduled to run at 10 AM and 10 PM daily. 
+# The CronJob should execute a busybox container that sleeps for 30 seconds and
+# has resource limits set to 100m CPU and 200Mi memory.
+#
+# % k create cronjob my-job --image=busybox --schedule="*/1 * * * *" -oyaml --dry-run=client -- sleep 30
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hello
+spec:
+  schedule: "* 10/22 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: hello
+            image: busybox:1.28
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - sleep
+            - 30
+            resources:
+              limits:
+                cpu: "100m"
+                memory: "200Mi"
+          restartPolicy: OnFailure
