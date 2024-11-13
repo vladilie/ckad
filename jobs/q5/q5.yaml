@@ -1,0 +1,21 @@
+# 
+# Configure a Job with an active deadline of 60 seconds. The Job should run a busybox container that sleeps for 90 seconds,
+#  then echoes "Job Deadline Test." Observe whether the Job is terminated due to exceeding the active deadline.
+# % k create job deadline-job --image=busybox -oyaml --dry-run=client -- 'sleep 90' >> q5.yaml
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: deadline-job
+spec:
+  activeDeadlineSeconds: 60
+  template:
+    spec:
+      containers:
+      - command: ["sleep","90"]
+        image: busybox
+        name: deadline-job
+        resources: {}
+      restartPolicy: OnFailure
+status: {}

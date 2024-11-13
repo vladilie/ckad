@@ -1,0 +1,19 @@
+# Create a Kubernetes Job that runs a container to execute date. 
+# Set the restartPolicy to OnFailure. Ensure the Job completes successfully and note the behavior.
+# % k create job failure-job --image=busybox -oyaml --dry-run=client -- 'exit 1' >> q4.yaml
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: failure-job
+spec:
+  template:
+    spec:
+      containers:
+      - command: ["exit","1"]
+        image: busybox
+        name: failure-job
+        resources: {}
+      restartPolicy: OnFailure
+status: {}

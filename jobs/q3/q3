@@ -1,0 +1,20 @@
+# Write a Job that runs an invalid command to simulate failure and sets a backoff limit of 3. 
+# Verify that the Job terminates after 3 retries.
+#
+# % k create job backoff-job --image=busybox -oyaml --dry-run=client -- 'exit 1' >> q2.yaml
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: backoff-job
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      containers:
+      - command: ["exit","1"]
+        image: busybox
+        name: backoff-job
+        resources: {}
+      restartPolicy: Never
+status: {}
