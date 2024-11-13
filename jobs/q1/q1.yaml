@@ -1,0 +1,23 @@
+# Create a Kubernetes Job that runs a busybox container, which sleeps for 10 seconds, then echoes 'Job Completed!' to the console.
+#
+# k create job complete-job --image=busybox -oyaml --dry-run=client -- echo "Job Completed\!"  
+#
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: null
+  name: complete-job
+spec:
+  template:
+    metadata:
+      creationTimestamp: null
+    spec:
+      containers:
+      - command: ["sh", "-c", "sleep 10; echo 'Job Completed!'"] 
+        image: busybox
+        name: complete-job
+        resources: {}
+      restartPolicy: Never
+status: {}
+

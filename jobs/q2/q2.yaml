@@ -1,0 +1,20 @@
+# Create a Kubernetes Job that should complete by running 5 successful tasks with 2 tasks running in 
+# parallel at a time. Use a busybox container that sleeps for 20 seconds in each task.
+# % k create job paralellization-job --image=busybox -oyaml --dry-run=client -- 'sleep 20' >> q2.yaml 
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: paralellization-job
+spec:
+  completions: 5  
+  paralellism: 2
+  template:
+    spec:
+      containers:
+      - command: ["sleep", "20"]
+        image: busybox
+        name: paralellization-job
+        resources: {}
+      restartPolicy: Never
+status: {}
